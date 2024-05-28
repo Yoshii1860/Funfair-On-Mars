@@ -13,6 +13,7 @@ public class DrawerInteractable : XRGrabInteractable
     [SerializeField] private Vector3 _drawerLimitDistance = new Vector3(0.02f, 0.02f, 0f);
     [SerializeField] private float _drawerLimitZ = 0.92f;
     [SerializeField] private XRSocketInteractor _keySocket;
+    [SerializeField] private GameObject _keyLight;
     [SerializeField] private bool _isLoacked = true;
 
     private Transform _parentTransform;
@@ -62,6 +63,7 @@ public class DrawerInteractable : XRGrabInteractable
     private void OnDrawerUnlocked(SelectEnterEventArgs args)
     {
         _isLoacked = false;
+        _keyLight.SetActive(false);
         Debug.Log("Drawer Unlocked!");
     }
 
