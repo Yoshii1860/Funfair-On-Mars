@@ -8,24 +8,18 @@ public class XRButtonInteractable : XRSimpleInteractable
 {
     [Space(10)]
     [Header("Button Settings")]
-    [SerializeField] private Color[] _buttonColors = new Color[4];
     [SerializeField] private Image _buttonImage;
 
-    private Color _normalColor;
-    private Color _highlightedColor;
-    private Color _pressedColor;
-    private Color _selectedColor;
+    [SerializeField] private Color _normalColor;
+    [SerializeField] private Color _highlightedColor;
+    [SerializeField] private Color _pressedColor;
+    [SerializeField] private Color _selectedColor;
 
     private bool _isPressed = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        _normalColor = _buttonColors[0];
-        _highlightedColor = _buttonColors[1];
-        _pressedColor = _buttonColors[2];
-        _selectedColor = _buttonColors[3];
-
         _buttonImage.color = _normalColor;
     }
 
@@ -72,13 +66,12 @@ public class XRButtonInteractable : XRSimpleInteractable
         }
         else
         {
-            _buttonImage.color = _pressedColor;
+            _buttonImage.color = _selectedColor;
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ResetColor()
     {
-        
+        _buttonImage.color = _normalColor;
     }
 }
