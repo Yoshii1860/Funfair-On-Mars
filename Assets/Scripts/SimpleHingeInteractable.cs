@@ -3,19 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class SimpleHingeInteractable : XRSimpleInteractable
+[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(Rigidbody))]
+public abstract class SimpleHingeInteractable : XRSimpleInteractable
 {
-    [SerializeField] bool _isLocked = true;
+    [SerializeField] private Vector3 _positionLimits;
+    [SerializeField] private bool _isLocked = true;
 
     private Transform _grabHand;
+    private Collider _hingeCollider;
+    private Vector3 _hingePosition;
+
     private const string DEFAULT_LAYER = "Default";
     private const string GRAB_LAYER = "Grab"; 
+
+    protected virtual void Start()
+    {
+        _hingeCollider = GetComponent<Collider>();
+    }
 
     protected virtual void Update()
     {
         if (_grabHand != null)
         {
-            transform.LookAt(_grabHand, transform.forward);
+            TrackHand();
         }
     }
 
@@ -24,7 +35,7 @@ public class SimpleHingeInteractable : XRSimpleInteractable
         if (!_isLocked)
         {
             base.OnSelectEntered(args);
-            _grabHand = args.interactor.transform;
+            _grabHand = args.interactorObject.transform;
         }
     }
 
@@ -33,6 +44,23 @@ public class SimpleHingeInteractable : XRSimpleInteractable
         base.OnSelectExited(args);
         _grabHand = null;
         ChangeLayerMask(GRAB_LAYER);
+        ResetHinge();
+    }
+
+    private void TrackHand()
+    {
+        transform.LookAt(_grabHand, transform.forward);
+        _hingePosition = _hingeCollider.bounds.center;
+
+        if (_grabHand.position.z >= _hingePosition.z + _positionLimits.z
+            || _grabHand.position.z <= _hingePosition.z - _positionLimits.z
+            || _grabHand.position.y >= _hingePosition.y + _positionLimits.y
+            || _grabHand.position.y <= _hingePosition.y - _positionLimits.y
+            || _grabHand.position.x >= _hingePosition.x + _positionLimits.x
+            || _grabHand.position.x <= _hingePosition.x - _positionLimits.x)
+        {
+            Release();
+        }
     }
 
     public void Unlock()
@@ -44,6 +72,8 @@ public class SimpleHingeInteractable : XRSimpleInteractable
     {
         ChangeLayerMask(DEFAULT_LAYER);
     }
+
+    protected abstract void ResetHinge();
 
     private void ChangeLayerMask(string mask)
     {

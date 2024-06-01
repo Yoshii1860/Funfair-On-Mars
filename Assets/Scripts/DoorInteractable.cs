@@ -8,19 +8,35 @@ public class DoorInteractable : SimpleHingeInteractable
     [SerializeField] private Transform _doorObject;
     [SerializeField] private CombinationLock _combinationLock;
     [SerializeField] private Vector3 _rotationLimits;
+    [SerializeField] private Collider _closedCollider;
+    [SerializeField] private Collider _openCollider;
 
-    private Transform _startTransform;
+    private Vector3 _startRotation;
+    private Vector3 _endRotation;
+
     private float _startAngleX;
 
-    private void Start()
+    private bool _isClosed = true;
+    private bool _isOpen = false;
+
+    protected override void Start()
     {
+        base.Start();
+
         if (_combinationLock != null)
         {
             _combinationLock.UnlockAction += Unlock;
         }
 
-        _startTransform = transform;
-        _startAngleX = _startTransform.localEulerAngles.x;
+        _startRotation = transform.localEulerAngles;
+        _startAngleX = _startRotation.x;
+
+        _endRotation = new Vector3
+        (
+            transform.localEulerAngles.x,
+            transform.localEulerAngles.y + _rotationLimits.y,
+            transform.localEulerAngles.z
+        );
 
         if (_startAngleX >= 180)
         {
@@ -47,8 +63,25 @@ public class DoorInteractable : SimpleHingeInteractable
         }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other == _closedCollider)
+        {
+            _isClosed = true;
+            Release();
+        }
+        else if (other == _openCollider)
+        {
+            _isOpen = true;
+            Release();
+        }
+    }
+
     private void CheckLimits()
     {
+        _isClosed = false;
+        _isOpen = false;
+
         float localAngleX = transform.localEulerAngles.x;
         if (localAngleX > 180)
         {
@@ -59,7 +92,24 @@ public class DoorInteractable : SimpleHingeInteractable
         || localAngleX <= _startAngleX - _rotationLimits.x)
         {
             Release();
-            transform.localEulerAngles = new Vector3(
+        }
+    }
+
+    protected override void ResetHinge()
+    {
+        if (_isClosed)
+        {
+            transform.localEulerAngles = _startRotation;
+        }
+        else if (_isOpen)
+        {
+            transform.localEulerAngles = _endRotation;
+            _isOpen = false;
+        }
+        else
+        {
+            transform.localEulerAngles = new Vector3
+            (
                 _startAngleX,
                 transform.localEulerAngles.y,
                 transform.localEulerAngles.z
