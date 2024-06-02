@@ -1,9 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class DoorInteractable : SimpleHingeInteractable
 {
+    public UnityEvent OnOpen;
 
     [SerializeField] private Transform _doorObject;
     [SerializeField] private CombinationLock _combinationLock;
@@ -29,7 +29,7 @@ public class DoorInteractable : SimpleHingeInteractable
         }
 
         _startRotation = transform.localEulerAngles;
-        _startAngleX = _startRotation.x;
+        _startAngleX = GetAngle(_startRotation.x);
 
         _endRotation = new Vector3
         (
@@ -37,11 +37,6 @@ public class DoorInteractable : SimpleHingeInteractable
             transform.localEulerAngles.y + _rotationLimits.y,
             transform.localEulerAngles.z
         );
-
-        if (_startAngleX >= 180)
-        {
-            _startAngleX -= 360;
-        }
     }
 
     protected override void Update()
@@ -77,24 +72,6 @@ public class DoorInteractable : SimpleHingeInteractable
         }
     }
 
-    private void CheckLimits()
-    {
-        _isClosed = false;
-        _isOpen = false;
-
-        float localAngleX = transform.localEulerAngles.x;
-        if (localAngleX > 180)
-        {
-            localAngleX -= 360;
-        }
-
-        if (localAngleX >= _startAngleX + _rotationLimits.x
-        || localAngleX <= _startAngleX - _rotationLimits.x)
-        {
-            Release();
-        }
-    }
-
     protected override void ResetHinge()
     {
         if (_isClosed)
@@ -104,7 +81,7 @@ public class DoorInteractable : SimpleHingeInteractable
         else if (_isOpen)
         {
             transform.localEulerAngles = _endRotation;
-            _isOpen = false;
+            OnOpen?.Invoke();
         }
         else
         {
@@ -115,5 +92,31 @@ public class DoorInteractable : SimpleHingeInteractable
                 transform.localEulerAngles.z
             );
         }
+    }
+
+
+
+    private void CheckLimits()
+    {
+        _isClosed = false;
+        _isOpen = false;
+
+        float localAngleX = GetAngle(transform.localEulerAngles.x);
+
+        if (localAngleX >= _startAngleX + _rotationLimits.x
+        || localAngleX <= _startAngleX - _rotationLimits.x)
+        {
+            Release();
+        }
+    }
+
+    private float GetAngle(float angle)
+    {
+        if (angle > 180)
+        {
+            angle -= 360;
+        }
+
+        return angle;
     }
 }
