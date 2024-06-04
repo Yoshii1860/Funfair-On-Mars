@@ -7,7 +7,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 public class SimpleUIControl : MonoBehaviour
 {
     [SerializeField] XRButtonInteractable _startButton;
-    [SerializeField] GameObject _keyLight;
+    [SerializeField] GameObject[] _keyLights;
     [SerializeField] string[] _msgStrings;
     [SerializeField] TextMeshProUGUI[] _msgTexts;
 
@@ -27,9 +27,12 @@ public class SimpleUIControl : MonoBehaviour
         {
             SetText(_msgStrings[2], 0);
             SetText(_msgStrings[3], 1);
-            if (_keyLight != null)
+            if (_keyLights != null)
             {
-                _keyLight.SetActive(true);
+                for (int i = 0; i < _keyLights.Length; i++)
+                {
+                    _keyLights[i].SetActive(true);
+                }
             }
             _isPressed = true;
         }
@@ -37,9 +40,12 @@ public class SimpleUIControl : MonoBehaviour
         {
             SetText(_msgStrings[0], 0);
             SetText(_msgStrings[1], 1);
-            if (_keyLight != null)
+            if (_keyLights != null)
             {
-                _keyLight.SetActive(false);
+                for (int i = 0; i < _keyLights.Length; i++)
+                {
+                    _keyLights[i].SetActive(false);
+                }
             }
             _isPressed = false;
         }
