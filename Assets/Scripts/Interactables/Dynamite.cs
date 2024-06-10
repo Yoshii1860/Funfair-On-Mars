@@ -20,8 +20,12 @@ public class Dynamite : XRGrabInteractable
 
     private void OnCollisionEnter(Collision other)
     {
+        Debug.Log("Collision with " + other.gameObject.name);
+        Debug.Log("Is activated: " + _isActivated);
+        Debug.Log("Is wand projectile: " + other.gameObject.GetComponent<WandProjectile>() != null);
         if (_isActivated && other.gameObject.GetComponent<WandProjectile>() != null)
         {
+            Debug.Log("Explode");
             OnExplode?.Invoke();
         }
     }

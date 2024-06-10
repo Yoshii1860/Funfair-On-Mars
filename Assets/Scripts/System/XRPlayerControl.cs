@@ -21,7 +21,7 @@ public class XRPlayerControl : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        for (int i = 0; i < _grabMoveProviders.Length; i++)
+        for (int i = 0; i < _grabColliders.Length; i++)
         {
             if (other == _grabColliders[i])
             {

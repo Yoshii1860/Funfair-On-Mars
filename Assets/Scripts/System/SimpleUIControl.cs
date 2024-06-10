@@ -6,53 +6,42 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class SimpleUIControl : MonoBehaviour
 {
-    [SerializeField] XRButtonInteractable _startButton;
-    [SerializeField] GameObject[] _keyLights;
-    [SerializeField] string[] _msgStrings;
+    [SerializeField] ProgressControl _progressControl;
     [SerializeField] TextMeshProUGUI[] _msgTexts;
 
-    private bool _isPressed = false;
+    private const int TEXT_FIELD = 0;
+    private const int BTN_FIELD = 1;
 
-    void Start()
+    private void OnEnable()
     {
-        if (_startButton != null)
+        if (_progressControl != null)
         {
-            _startButton.selectEntered.AddListener(OnStartButtonPressed);
+            _progressControl.OnStartGame.AddListener(StartGame);
+            _progressControl.OnChallangeComplete.AddListener(ChallengeCompleted);
         }
     }
 
-    private void OnStartButtonPressed(SelectEnterEventArgs args)
+    private void StartGame(string txtMsg, string btnMsg, bool isButton)
     {
-        if (!_isPressed)
+        SetText(txtMsg, btnMsg, isButton);
+    }
+
+    private void ChallengeCompleted(string txtMsg, string btnMsg, bool isButton)
+    {
+        SetText(txtMsg, btnMsg, isButton);
+    }
+
+    public void SetText(string txtMsg, string btnMsg, bool isButton)
+    {
+        _msgTexts[TEXT_FIELD].text = txtMsg;
+        _msgTexts[BTN_FIELD].text = btnMsg;
+        if (isButton)
         {
-            SetText(_msgStrings[2], 0);
-            SetText(_msgStrings[3], 1);
-            if (_keyLights != null)
-            {
-                for (int i = 0; i < _keyLights.Length; i++)
-                {
-                    _keyLights[i].SetActive(true);
-                }
-            }
-            _isPressed = true;
+            _msgTexts[BTN_FIELD].transform.parent.gameObject.SetActive(true);
         }
         else
         {
-            SetText(_msgStrings[0], 0);
-            SetText(_msgStrings[1], 1);
-            if (_keyLights != null)
-            {
-                for (int i = 0; i < _keyLights.Length; i++)
-                {
-                    _keyLights[i].SetActive(false);
-                }
-            }
-            _isPressed = false;
+            _msgTexts[BTN_FIELD].transform.parent.gameObject.SetActive(false);
         }
-    }
-
-    public void SetText(string msg, int index)
-    {
-        _msgTexts[index].text = msg;
     }
 }

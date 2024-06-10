@@ -5,8 +5,11 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class XRAudioManager : MonoBehaviour
 {
+    [Header("Local Audio Settings")]
+    [SerializeField] private AudioSource _backgroundSource;
+    [SerializeField] private AudioClip _backgroundClip;
     [SerializeField] private AudioClip _fallBackClip;
-
+    
     [Header("Grab Interactables")]
     [SerializeField] private AudioSource _grabSource;
     [SerializeField] private AudioSource _activateSource;
@@ -17,13 +20,22 @@ public class XRAudioManager : MonoBehaviour
     [SerializeField] private AudioClip _activateWandClip;
     private XRGrabInteractable[] _grabInteractables;
 
+    [Header("Progress Control")]
+    [SerializeField] private ProgressControl _progressControl;
+    private AudioSource _progressSource;
+    private AudioClip _startGameClip;
+    private AudioClip _challengeCompleteClip;
+    private bool _hasStarted = false;   
+
     [Header("Drawer Interactables")]
     [SerializeField] private DrawerInteractable _drawer;
-    [SerializeField] private XRSocketInteractor _drawerKeySocket;
+    private XRSocketInteractor _drawerKeySocket;
+    private XRPhysicsButtonInteractable _drawerPyhsicsButton;
     private AudioSource _drawerSocketSource;
     private AudioSource _drawerSource;
     private AudioClip _drawerSocketClip;
     private AudioClip _drawerMoveClip;
+    private bool _isDetached = false;
     
     [Header("Hinge Interactables")]
     [SerializeField] private SimpleHingeInteractable[] _cabinetDoors = new SimpleHingeInteractable[2];
@@ -39,7 +51,7 @@ public class XRAudioManager : MonoBehaviour
 
     [Header("Wall Interactables")]
     [SerializeField] private WallSystem _wall;
-    [SerializeField] private XRSocketInteractor _wallSocket;
+     private XRSocketInteractor _wallSocket;
     private AudioSource _wallSource;
     private AudioSource _wallSocketSource;
     private AudioClip _wallExplosionClip;
@@ -55,6 +67,13 @@ public class XRAudioManager : MonoBehaviour
         }
 
         SetGrabInteractables();
+
+        if (_progressControl != null)
+        {
+            SetProgressControl();
+            _progressControl.OnStartGame.AddListener(StartGame);
+            _progressControl.OnChallangeComplete.AddListener(ChallangeCompleted);
+        }
 
         if (_drawer != null)
         {
@@ -83,9 +102,83 @@ public class XRAudioManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (_progressControl != null)
+        {
+            _progressControl.OnStartGame.RemoveListener(StartGame);
+            _progressControl.OnChallangeComplete.RemoveListener(ChallangeCompleted);
+        }
+
+        for (int i = 0; i < _grabInteractables.Length; i++)
+        {
+            _grabInteractables[i].selectEntered.RemoveListener(OnSelectEnterGrab);
+            _grabInteractables[i].selectExited.RemoveListener(OnSelectExitGrab);
+            _grabInteractables[i].activated.RemoveListener(OnActivatedGrab);
+        }
+
+        if (_drawer != null)
+        {
+            _drawer.selectEntered.RemoveListener(OnDrawerMove);
+            _drawer.selectExited.RemoveListener(OnDrawerStop);
+            _drawer.OnDrawerDetach.RemoveListener(OnDrawerDetach);
+
+            if (_drawerKeySocket != null)
+            {
+                _drawerKeySocket.selectEntered.RemoveListener(OnDrawerSocketed);
+            }
+        }
+
+        for (int i = 0; i < _cabinetDoors.Length; i++)
+        {
+            _cabinetDoors[i].OnHingeSelected.RemoveListener(OnCabinetDoorMove);
+            _cabinetDoors[i].selectExited.RemoveListener(OnCabinetDoorStop);
+        }
+
+        if (_comboLock != null)
+        {
+            _comboLock.UnlockAction -= OnComboUnlock;
+            _comboLock.IncorrectAction -= OnIncorrectCombo;
+            _comboLock.ComboButtonPressed -= OnComboButtonPress;
+        }
+
         if (_wall != null)
         {
             _wall.OnDestroy.RemoveListener(OnDestroyWall);
+
+            if (_wallSocket != null)
+            {
+                _wallSocket.selectEntered.RemoveListener(OnWallSocketed);
+            }
+        }
+    }
+
+    private void StartGame(string msg, string index, bool isButton)
+    {
+        Debug.Log("Start Game Called on AudioManager");
+        if (!_hasStarted)
+        {
+            _hasStarted = true;
+            if (_backgroundSource != null && _backgroundClip != null)
+            {
+                _backgroundSource.clip = _backgroundClip;
+                _backgroundSource.Play();
+            }
+        }
+        else
+        {
+            if (_progressSource != null && _startGameClip != null)
+            {
+                _progressSource.clip = _startGameClip;
+                _progressSource.Play();
+            }
+        }
+    }
+
+    private void ChallangeCompleted(string msg, string index, bool isButton)
+    {
+        if (_progressSource != null && _challengeCompleteClip != null)
+        {
+            _progressSource.clip = _challengeCompleteClip;
+            _progressSource.Play();
         }
     }
 
@@ -93,19 +186,17 @@ public class XRAudioManager : MonoBehaviour
     {
         if (args.interactableObject.transform.CompareTag("Key"))
         {
-            _grabSource.clip = _keyClip;
+            PlayGrabSound(_keyClip);
         }
         else
         {
-            _grabSource.clip = _grabClip;
+            PlayGrabSound();
         }
-        _grabSource.Play();
     }
 
     private void OnSelectExitGrab(SelectExitEventArgs args)
     {
-        _grabSource.clip = _grabClip;
-        _grabSource.Play();
+        PlayGrabSound();
     }
 
     private void OnActivatedGrab(ActivateEventArgs args)
@@ -127,9 +218,29 @@ public class XRAudioManager : MonoBehaviour
         _wallSource.Play();
     }
 
+    private void PlayGrabSound(AudioClip clip = null)
+    {
+        if (clip == null)
+        {
+            _grabSource.clip = _grabClip;
+        }
+        else
+        {
+            _grabSource.clip = clip;
+        }
+        _grabSource.Play();
+    }
+
     private void OnDrawerMove(SelectEnterEventArgs args)
     {
-        _drawerSource.Play();
+        if (_isDetached)
+        {
+            PlayGrabSound();
+        }
+        else
+        {
+            _drawerSource.Play();
+        }
     }
 
     private void OnDrawerStop(SelectExitEventArgs args)
@@ -187,6 +298,22 @@ public class XRAudioManager : MonoBehaviour
         _comboLockSource.Play();
     }
 
+    private void OnDrawerDetach()
+    {
+        _isDetached = true;
+        _drawerSource.Stop();
+    }
+
+    private void OnPhysicsButtonEnter()
+    {
+        PlayGrabSound(_keyClip);
+    }
+
+    private void OnPhysicsButtonExit()
+    {
+        PlayGrabSound(_keyClip);
+    }
+
     private void CheckClip(ref AudioClip clip)
     {
         if (clip == null)
@@ -207,6 +334,15 @@ public class XRAudioManager : MonoBehaviour
         }
     }
 
+    private void SetProgressControl()
+    {
+        _progressSource = _progressControl.gameObject.AddComponent<AudioSource>();
+        _startGameClip = _progressControl.GetStartGameClip();
+        _challengeCompleteClip = _progressControl.GetChallengeClip();
+        CheckClip(ref _startGameClip);
+        CheckClip(ref _challengeCompleteClip);
+    }  
+
     private void SetDrawerInteractable()
     {
         _drawerSource = _drawer.transform.gameObject.AddComponent<AudioSource>();
@@ -217,7 +353,9 @@ public class XRAudioManager : MonoBehaviour
 
         _drawer.selectEntered.AddListener(OnDrawerMove);
         _drawer.selectExited.AddListener(OnDrawerStop);
+        _drawer.OnDrawerDetach.AddListener(OnDrawerDetach);
 
+        _drawerKeySocket = _drawer.GetKeySocket();
         if (_drawerKeySocket != null)
         {
             _drawerSocketSource = _drawerKeySocket.gameObject.AddComponent<AudioSource>();
@@ -225,6 +363,13 @@ public class XRAudioManager : MonoBehaviour
             CheckClip(ref _drawerSocketClip);
             _drawerSocketSource.clip = _drawerSocketClip;
             _drawerKeySocket.selectEntered.AddListener(OnDrawerSocketed);
+        }
+
+        _drawerPyhsicsButton = _drawer.GetPhysicsButton();
+        if (_drawerPyhsicsButton != null)
+        {
+            _drawerPyhsicsButton.OnBaseEnter.AddListener(OnPhysicsButtonEnter);
+            _drawerPyhsicsButton.OnBaseExit.AddListener(OnPhysicsButtonExit);
         }
     }
 
@@ -260,6 +405,7 @@ public class XRAudioManager : MonoBehaviour
         CheckClip(ref _wallExplosionClip);
         _wallSource.clip = _wallExplosionClip;
         _wall.OnDestroy.AddListener(OnDestroyWall);
+        _wallSocket = _wall.GetSocketInteractor();
 
         if (_wallSocket != null)
         {

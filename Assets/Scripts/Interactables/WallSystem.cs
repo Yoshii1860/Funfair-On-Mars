@@ -58,7 +58,6 @@ public class WallSystem : MonoBehaviour
 
         if (_socketInteractor != null)
         {
-            Debug.Log("Adding Socket Interactor Listeners");
             _socketInteractor.selectEntered.AddListener(OnSelectEntered);
             _socketInteractor.selectExited.AddListener(OnSelectExited);
         }
@@ -67,11 +66,9 @@ public class WallSystem : MonoBehaviour
             _socketInteractor = GetComponentInChildren<XRSocketInteractor>();
             if (_socketInteractor != null)
             {
-                Debug.Log("Adding Socket Interactor Listeners");
                 _socketInteractor.selectEntered.AddListener(OnSelectEntered);
                 _socketInteractor.selectExited.AddListener(OnSelectExited);
             }
-            else Debug.LogWarning("Socket Interactor is still null on Start()");
         }
 
         if (_dynamite != null)
