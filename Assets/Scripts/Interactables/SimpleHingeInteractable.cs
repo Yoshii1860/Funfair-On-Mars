@@ -53,6 +53,7 @@ public abstract class SimpleHingeInteractable : XRSimpleInteractable
         _grabHand = null;
         ChangeLayerMask(GRAB_LAYER);
         ResetHinge();
+        Debug.Log("Simple Hinge Exit");
     }
 
     private void TrackHand()
@@ -67,6 +68,7 @@ public abstract class SimpleHingeInteractable : XRSimpleInteractable
             || _grabHand.position.x >= _hingePosition.x + _positionLimits.x
             || _grabHand.position.x <= _hingePosition.x - _positionLimits.x)
         {
+            Debug.Log("Hand out of bounds");
             Release();
         }
     }

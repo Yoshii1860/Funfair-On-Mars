@@ -6,30 +6,22 @@ using UnityEngine.Events;
 
 public class ProgressControl : MonoBehaviour
 {
-    public UnityEvent<string, string, bool> OnStartGame;
     public UnityEvent<string, string, bool> OnChallangeComplete;
 
+    public class ChallengeData
+    {
+        public string ChallengeString;
+        public string ButtonString;
+    }
+
+    private Dictionary<int, ChallengeData> _challenges;
+
     [Header("Start Interactables")]
-    [SerializeField] XRButtonInteractable _startButton;
-    [SerializeField] GameObject[] _keyLights;
-    [SerializeField] string _startGameString;
-    [SerializeField] string _startBtnString;
-    [SerializeField] AudioClip _startGameClip;
-
-    [Space(10)]
-    [Header("Drawer Interactables")]
-    [SerializeField] private DrawerInteractable _drawer;
-    private XRSocketInteractor _drawerKeySocket;
-
-    [Space(10)]
-    [Header("Combo Lock Interactables")]
-    [SerializeField] private CombinationLock _comboLock;
-
-    [Space(10)]
-    [Header("Wall Interactables")]
-    [SerializeField] private WallSystem _wall;
-    [SerializeField] private XRSocketInteractor _wallSocket;
-    [SerializeField] private GameObject[] _wallTeleportAreas;
+    [SerializeField] private XRButtonInteractable _startButton;
+    [SerializeField] private GameObject[] _keyLights;
+    [SerializeField] private AudioClip _startGameClip;
+    private bool _challangesCompleted = false;
+    [SerializeField] private int _challangeNumber;
 
     [Space(10)]
     [Header("Challenge Interactables")]
@@ -38,9 +30,36 @@ public class ProgressControl : MonoBehaviour
     [SerializeField] AudioClip _challengeClip;
 
     [Space(10)]
-    [Header("Light Switch Interactables")]
+    [Header("Challenge 1 & 2: Drawer")]
+    private int _drawerSocketChallenge = 1;
+    private int _drawerDetachChallenge = 2;
+    [SerializeField] private DrawerInteractable _drawer;
+    private XRSocketInteractor _drawerKeySocket;
+
+    [Space(10)]
+    [Header("Challenge 3: Combo Lock")]
+    private int _comboLockChallenge = 3;
+    [SerializeField] private CombinationLock _comboLock;
+
+    [Space(10)]
+    [Header("Challenge 4 & 5: Wall Interactables")]
+    private int _wallSocketChallenge = 4;
+    private int _wallDestroyChallenge = 5;
+    [SerializeField] private WallSystem _wall;
+    [SerializeField] private XRSocketInteractor _wallSocket;
+    [SerializeField] private GameObject[] _wallTeleportAreas;
+
+    [Space(10)]
+    [Header("Challenge 6: Light Switch")]
+    private int _lightSwitchChallenge = 6;
     [SerializeField] private LightSwitch _lightSwitch;
 
+    [Space(10)]
+    [Header("Challenge 7: Robot")]
+    private int _robotChallenge = 7;
+    [SerializeField] private NavMeshRobot _robot;
+    [SerializeField] private int _wallCubesToDestroy;
+    private int _wallCubesDestroyed = 0;
 
     private bool _isPressed = false;
     private int _currentChallenge = 0;
@@ -50,12 +69,21 @@ public class ProgressControl : MonoBehaviour
 
     private void Start()
     {
+        _challenges = new Dictionary<int, ChallengeData>();
+
+        foreach (string challenge in _challengeStrings)
+        {
+            ChallengeData data = new ChallengeData();
+            data.ChallengeString = challenge;
+            data.ButtonString = _challengeBtnStrings[_challenges.Count];
+            _challenges.Add(_challenges.Count, data);
+        }
+
         if (_startButton != null)
         {
             _startButton.selectEntered.AddListener(OnStartButtonPressed);
         }
 
-        OnStartGame?.Invoke(_startGameString, _startBtnString, true);
         SetDrawerInteractable();
 
         if (_comboLock != null)
@@ -72,6 +100,11 @@ public class ProgressControl : MonoBehaviour
         {
             _lightSwitch.OnLightSwitchedOn.AddListener(LibraryLightOn);
         }
+
+        if (_robot != null)
+        {
+            _robot.OnDestroyWallCube.AddListener(OnDestroyWallCube);
+        }
     }
 
     private void CompleteChallenge()
@@ -80,22 +113,18 @@ public class ProgressControl : MonoBehaviour
         if (_currentChallenge < _challengeStrings.Length)
         {
             Debug.Log("Challenge Completed");
-            OnChallangeComplete?.Invoke(_challengeStrings[_currentChallenge], _challengeBtnStrings[_currentChallenge], false);
+            OnChallangeComplete?.Invoke(_challengeStrings[_currentChallenge], _challengeBtnStrings[_currentChallenge], true);
         }
         else if (_currentChallenge == _challengeStrings.Length)
         {
             Debug.Log("All Challenges Completed");
+            OnChallangeComplete?.Invoke(_challengeStrings[_currentChallenge], _challengeBtnStrings[_currentChallenge], true);
         }
     }
 
-    private void LibraryLightOn()
-    {
-        CompleteChallenge();
-    }
-
+    ////////// CHALLENGE 0 //////////
     private void OnStartButtonPressed(SelectEnterEventArgs args)
     {
-        Debug.Log("Start Button Pressed");
         if (!_isPressed)
         {
             if (_keyLights != null)
@@ -107,41 +136,84 @@ public class ProgressControl : MonoBehaviour
             }
             _isPressed = true;
 
-            if (_currentChallenge < _challengeStrings.Length)
+            if (_currentChallenge < _challengeStrings.Length && _currentChallenge == 0)
             {
                 Debug.Log("Challenge Started");
-                OnStartGame?.Invoke(_challengeStrings[_currentChallenge], _challengeBtnStrings[_currentChallenge], false);
+                CompleteChallenge();
             }
         }
     }
 
-    private void SetDrawerInteractable()
-    {
-        if (_drawer != null)
-        {
-            _drawer.OnDrawerDetach.AddListener(OnDrawerDetach);
-            _drawerKeySocket = _drawer.GetKeySocket();
-            if (_drawerKeySocket != null)
-            {
-                _drawer.selectEntered.AddListener(OnDrawerSocketed);
-            }
-        }
-    }
-
+    ////////// CHALLENGE 1 //////////
     private void OnDrawerSocketed(SelectEnterEventArgs args)
     {
-        Debug.Log("Drawer Socketed");
-        CompleteChallenge();
+        if (_drawerSocketChallenge == _currentChallenge)
+        {
+            CompleteChallenge();
+        }
     }
 
+    ////////// CHALLENGE 2 //////////
     private void OnDrawerDetach()
     {
-        CompleteChallenge();
+        if (_drawerDetachChallenge == _currentChallenge)
+        {
+            CompleteChallenge();
+        }
     }
 
+    ////////// CHALLENGE 3 //////////
     private void OnComboUnlock()
     {
-        CompleteChallenge();
+        if (_comboLockChallenge == _currentChallenge)
+        {
+            CompleteChallenge();
+        }
+    }
+
+    ////////// CHALLENGE 4 //////////
+    private void OnWallSocketed(SelectEnterEventArgs args)
+    {
+        if (_wallSocketChallenge == _currentChallenge)
+        {
+            CompleteChallenge();
+        }
+    }
+
+    ////////// CHALLENGE 5 //////////
+    private void OnDestroyWall()
+    {
+        if (_wallDestroyChallenge == _currentChallenge)
+        {
+            for (int i = 0; i < _wallTeleportAreas.Length; i++)
+            {
+                _wallTeleportAreas[i].SetActive(true);
+            }
+            CompleteChallenge();
+        }
+    }
+
+    ////////// CHALLENGE 6 //////////
+    private void LibraryLightOn()
+    {
+        if (_lightSwitchChallenge == _currentChallenge)
+        {
+            CompleteChallenge();
+        }
+    }
+
+    ////////// CHALLENGE 7 //////////
+    private void OnDestroyWallCube()
+    {
+        _wallCubesDestroyed++;
+
+        if (_wallCubesDestroyed >= _wallCubesToDestroy)
+        {
+            if (_robotChallenge == _currentChallenge)
+            {
+                CompleteChallenge();
+            }
+        }
     }
 
     private void SetWall()
@@ -158,18 +230,16 @@ public class ProgressControl : MonoBehaviour
         }
     }
 
-    private void OnWallSocketed(SelectEnterEventArgs args)
+    private void SetDrawerInteractable()
     {
-        Debug.Log("Wall Socketed");
-        CompleteChallenge();
-    }
-
-    private void OnDestroyWall()
-    {
-        for (int i = 0; i < _wallTeleportAreas.Length; i++)
+        if (_drawer != null)
         {
-            _wallTeleportAreas[i].SetActive(true);
+            _drawer.OnDrawerDetach.AddListener(OnDrawerDetach);
+            _drawerKeySocket = _drawer.GetKeySocket();
+            if (_drawerKeySocket != null)
+            {
+                _drawer.selectEntered.AddListener(OnDrawerSocketed);
+            }
         }
-        CompleteChallenge();
     }
 }

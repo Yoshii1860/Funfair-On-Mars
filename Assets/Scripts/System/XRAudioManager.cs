@@ -42,20 +42,30 @@ public class XRAudioManager : MonoBehaviour
     private AudioSource[] _cabinetDoorSources;
     private AudioClip _cabinetDoorMoveClip;
 
-    [Header("Combo Lock Interactables")]
+    [Header("Combo Lock")]
     [SerializeField] private CombinationLock _comboLock;
     private AudioSource _comboLockSource;
     private AudioClip _unlockClip;
     private AudioClip _comboButtonClip;
     private AudioClip _incorrectClip;
 
-    [Header("Wall Interactables")]
+    [Header("Wall")]
     [SerializeField] private WallSystem _wall;
      private XRSocketInteractor _wallSocket;
     private AudioSource _wallSource;
     private AudioSource _wallSocketSource;
     private AudioClip _wallExplosionClip;
     private AudioClip _wallSocketClip;
+
+    [Header("Joystick")]
+    [SerializeField] private SimpleHingeInteractable _joystick;
+    private AudioSource _joystickSource;
+    private AudioClip _joystickClip;
+
+    [Header("Robot")]
+    [SerializeField] private NavMeshRobot _robot;
+    private AudioSource _robotSource;
+    private AudioClip _destroyClip;
 
     private const string FALLBACKCLIP_NAME = "fallBackClip";
 
@@ -71,7 +81,6 @@ public class XRAudioManager : MonoBehaviour
         if (_progressControl != null)
         {
             SetProgressControl();
-            _progressControl.OnStartGame.AddListener(StartGame);
             _progressControl.OnChallangeComplete.AddListener(ChallangeCompleted);
         }
 
@@ -98,13 +107,22 @@ public class XRAudioManager : MonoBehaviour
         {
             SetWall();
         }
+
+        if (_joystick != null)
+        {
+            SetJoystick();
+        }
+
+        if (_robot != null)
+        {
+            SetRobot();
+        }
     }
 
     private void OnDisable()
     {
         if (_progressControl != null)
         {
-            _progressControl.OnStartGame.RemoveListener(StartGame);
             _progressControl.OnChallangeComplete.RemoveListener(ChallangeCompleted);
         }
 
@@ -314,6 +332,21 @@ public class XRAudioManager : MonoBehaviour
         PlayGrabSound(_keyClip);
     }
 
+    private void JoystickMove(SimpleHingeInteractable args)
+    {
+        _joystickSource.Play();
+    }
+
+    private void JoystickExited(SelectExitEventArgs args)
+    {
+        _joystickSource.Stop();
+    }
+
+    private void OnDestroyWallCube()
+    {
+        _robotSource.Play();
+    }
+
     private void CheckClip(ref AudioClip clip)
     {
         if (clip == null)
@@ -415,5 +448,25 @@ public class XRAudioManager : MonoBehaviour
             _wallSocketSource.clip = _wallSocketClip;
             _wallSocket.selectEntered.AddListener(OnWallSocketed);
         }
+    }
+
+    private void SetJoystick()
+    {
+        _joystickClip = _joystick.GetHingeMoveClip();
+        CheckClip(ref _joystickClip);
+        _joystickSource = _joystick.gameObject.AddComponent<AudioSource>();
+        _joystickSource.clip = _joystickClip;
+        _joystickSource.loop = true;
+        _joystick.OnHingeSelected.AddListener(JoystickMove);
+        _joystick.selectExited.AddListener(JoystickExited);
+    }
+
+    private void SetRobot()
+    {
+        _robotSource = _robot.gameObject.AddComponent<AudioSource>();
+        _destroyClip = _robot.GetCollisionClip();
+        CheckClip(ref _destroyClip);
+        _robotSource.clip = _destroyClip;
+        _robot.OnDestroyWallCube.AddListener(OnDestroyWallCube);
     }
 }

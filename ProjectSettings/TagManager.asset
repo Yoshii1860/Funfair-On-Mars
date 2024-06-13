@@ -6,11 +6,12 @@ TagManager:
   tags:
   - BackgroundCamera
   - Key
+  - WallCube
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Static Collider
   - Water
   - UI
   - InteractableObjects
@@ -22,8 +23,8 @@ TagManager:
   - 
   - Character
   - CharacterOutline
-  - 
-  - 
+  - Left Hand Physics
+  - Right Hand Physics
   - 
   - 
   - 
