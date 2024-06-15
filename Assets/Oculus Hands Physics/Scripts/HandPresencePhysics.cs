@@ -4,23 +4,25 @@ using UnityEngine;
 
 public class HandPresencePhysics : MonoBehaviour
 {
-    [SerializeField] private Transform _target;
-    private Rigidbody _rb;
+    public Transform target;
+    private Rigidbody rb;
 
+    // Start is called before the first frame update
     void Start()
     {
-        _rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
     }
 
+    // Update is called once per frame
     void FixedUpdate()
     {
-        _rb.velocity = (_target.position - transform.position) * Time.fixedDeltaTime;
+        rb.velocity = (target.position - transform.position) / Time.fixedDeltaTime;
 
-        Quaternion rotationDifferece = _target.rotation * Quaternion.Inverse(transform.rotation);
-        rotationDifferece.ToAngleAxis(out float angleInDegree, out Vector3 rotationAxis);
+        Quaternion rotationDifference = target.rotation * Quaternion.Inverse(transform.rotation);
+        rotationDifference.ToAngleAxis(out float angle, out Vector3 axis);
 
-        Vector3 rotationDifferenceInDegree = angleInDegree * rotationAxis;
+        Vector3 rotationDifferenceInDegrees = angle * axis;
 
-        _rb.angularVelocity = rotationDifferenceInDegree * Mathf.Deg2Rad * Time.fixedDeltaTime;
+        rb.angularVelocity = (rotationDifferenceInDegrees * Mathf.Deg2Rad / Time.fixedDeltaTime);
     }
 }
