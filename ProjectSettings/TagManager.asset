@@ -7,6 +7,8 @@ TagManager:
   - BackgroundCamera
   - Key
   - WallCube
+  - LeftHand
+  - RightHand
   layers:
   - Default
   - TransparentFX
@@ -20,11 +22,11 @@ TagManager:
   - BackgroundImage
   - DistantHotspot
   - Player
-  - 
+  - NonPhysicsHandLayer
   - Character
   - CharacterOutline
-  - Left Hand Physics
-  - Right Hand Physics
+  - Body
+  - 
   - 
   - 
   - 

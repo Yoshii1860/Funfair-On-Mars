@@ -32,9 +32,9 @@ public class JoystickButton : MonoBehaviour
 
     public void Follow(BaseInteractionEventArgs hover)
     {
-        if (hover.interactor is XRPokeInteractor)
+        if (hover.interactorObject is XRPokeInteractor)
         {
-            XRPokeInteractor pokeInteractor = (XRPokeInteractor)hover.interactor;
+            XRPokeInteractor pokeInteractor = (XRPokeInteractor)hover.interactorObject;
 
             _pokeAttachTransform = pokeInteractor.attachTransform;
             _offset = transform.position - _pokeAttachTransform.position;
@@ -71,7 +71,7 @@ public class JoystickButton : MonoBehaviour
 
     private void Reset(BaseInteractionEventArgs hover)
     {
-        if (hover.interactor is XRPokeInteractor)
+        if (hover.interactorObject is XRPokeInteractor)
         {
             _isFollowing = false;
             _isFrozen = false;
@@ -80,7 +80,7 @@ public class JoystickButton : MonoBehaviour
 
     private void Freeze(BaseInteractionEventArgs hover)
     {
-        if (hover.interactor is XRPokeInteractor)
+        if (hover.interactorObject is XRPokeInteractor)
         {
             _isFrozen = true;
         }

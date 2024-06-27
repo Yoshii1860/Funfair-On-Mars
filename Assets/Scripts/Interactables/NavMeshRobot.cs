@@ -10,6 +10,8 @@ public class NavMeshRobot : MonoBehaviour
     private NavMeshAgent _agent;
     private Animator _animator;
     [SerializeField] private AudioClip _collisionClip;
+    [SerializeField] private bool _isClosed = true;
+    private bool _isTransforming = false;
 
     public UnityEvent OnDestroyWallCube;
     public AudioClip GetCollisionClip() => _collisionClip;
@@ -22,13 +24,13 @@ public class NavMeshRobot : MonoBehaviour
 
     public void MoveAgent(Vector3 destination)
     {
-        _animator.SetBool("Walk", true);
+        _animator.SetBool(_isClosed ? "Roll_Anim" : "Walk_Anim", true);
         _agent.destination = _agent.transform.position + destination;
     }
 
     public void StopAgent()
     {
-        _animator.SetBool("Walk", false);
+        _animator.SetBool(_isClosed ? "Roll_Anim" : "Walk_Anim", false);
         _agent.ResetPath();
     }
 
@@ -39,5 +41,22 @@ public class NavMeshRobot : MonoBehaviour
             Destroy(other.gameObject);
             OnDestroyWallCube?.Invoke();
         }
+    }
+
+    public void TransformRobot()
+    {
+        if (!_isTransforming)
+        {
+            _animator.SetBool("Open_Anim", _isClosed);
+            _isClosed = !_isClosed;
+            StartCoroutine(TransformTimer());
+        }
+    }
+
+    private IEnumerator TransformTimer()
+    {
+        _isTransforming = true;
+        yield return new WaitForSeconds(3f);
+        _isTransforming = false;
     }
 }

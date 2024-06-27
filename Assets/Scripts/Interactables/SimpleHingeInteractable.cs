@@ -11,7 +11,7 @@ public abstract class SimpleHingeInteractable : XRSimpleInteractable
     public UnityEvent<SimpleHingeInteractable> OnHingeSelected;
 
     [SerializeField] private Vector3 _positionLimits;
-    [SerializeField] private bool _isLocked = true;
+    public bool IsLocked = true;
 
     [SerializeField] private AudioClip _hingeMoveClip;
 
@@ -39,7 +39,7 @@ public abstract class SimpleHingeInteractable : XRSimpleInteractable
 
     protected override void OnSelectEntered(SelectEnterEventArgs args)
     {
-        if (!_isLocked)
+        if (!IsLocked)
         {
             base.OnSelectEntered(args);
             _grabHand = args.interactorObject.transform;
@@ -56,7 +56,7 @@ public abstract class SimpleHingeInteractable : XRSimpleInteractable
         Debug.Log("Simple Hinge Exit");
     }
 
-    private void TrackHand()
+    protected virtual void TrackHand()
     {
         transform.LookAt(_grabHand, transform.forward);
         _hingePosition = _hingeCollider.bounds.center;
@@ -75,7 +75,12 @@ public abstract class SimpleHingeInteractable : XRSimpleInteractable
 
     public void Unlock()
     {
-        _isLocked = false;
+        IsLocked = false;
+    }
+
+    public void ToggleLock()
+    {
+        IsLocked = !IsLocked;
     }
 
     public void Release()
