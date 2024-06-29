@@ -55,6 +55,7 @@ public class XRButtonInteractable : XRSimpleInteractable
         }
 
         _isPressed = !_isPressed;
+        Debug.Log("Button Pressed");
     }
 
     protected override void OnSelectExited(SelectExitEventArgs args)

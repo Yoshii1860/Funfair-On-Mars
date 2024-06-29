@@ -9,6 +9,9 @@ TagManager:
   - WallCube
   - LeftHand
   - RightHand
+  - Car
+  - UI
+  - Teleport
   layers:
   - Default
   - TransparentFX
