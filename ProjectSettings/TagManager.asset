@@ -29,8 +29,8 @@ TagManager:
   - Character
   - CharacterOutline
   - Body
-  - 
-  - 
+  - MeshObstacles
+  - MeshGround
   - 
   - 
   - ItemRendering
