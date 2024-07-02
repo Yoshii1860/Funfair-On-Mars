@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c98b1151952db6b44a8fabce507ccdef, type: 3}
+  m_Name: CabbageAlienCannons
+  m_EditorClassIdentifier: 
+  SpeakerName: Cabbage
+  DialogueLines:
+  - DialogueText: 'Hi, stranger! How about a round of Alien Cannon? '
+    DialogueButtons:
+    - ButtonText: Yeah!
+      ActionKey: ContinueConversation
+    - ButtonText: No, thanks.
+      ActionKey: FinishDialogue
+  - DialogueText: Great! Get the pistol from the tent and get on the battleground!
+      Good luck!
+    DialogueButtons:
+    - ButtonText: Bye!
+      ActionKey: OpenWayToCannons
+  - DialogueText: Ok. Maybe next time!
+    DialogueButtons:
+    - ButtonText: See you!
+      ActionKey: CloseDialogue

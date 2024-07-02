@@ -98,7 +98,7 @@ public class DialogueManager : MonoBehaviour
 
                     dialogueButtons[capturedIndex].selectEntered.AddListener((SelectEnterEventArgs args) =>
                     {
-                        AlienManager.Instance.PlayButtonAction(capturedIndex == 0 ? firstActionKey : secondActionKey);
+                        AlienDialogueManager.Instance.PlayButtonAction(capturedIndex == 0 ? firstActionKey : secondActionKey);
                     });
                 }
                 else

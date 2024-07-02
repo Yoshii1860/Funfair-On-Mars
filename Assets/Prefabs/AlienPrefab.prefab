@@ -197,8 +197,8 @@ MonoBehaviour:
   currentState: 0
   waypoints: []
   currentWaypoint: {fileID: 0}
-  walkSpeed: 1
-  runSpeed: 3
+  walkSpeed: 0.8
+  runSpeed: 2.5
   _minIdleTime: 3
   _maxIdleTime: 8
   _averageTalkTime: 15

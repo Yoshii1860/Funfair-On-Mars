@@ -21,13 +21,10 @@ public class AlienBehavior : MonoBehaviour
     private Waypoint lastWaypoint;
     private bool actionCompleted = false;
 
-    [Range(1f, 6f)]
     public float walkSpeed = 1f;
-    [Range(2f, 8f)]
     public float runSpeed = 3f;
     public float _minIdleTime = 2f;
     public float _maxIdleTime = 5f;
-    [Range(5f, 30f)]
     public float _averageTalkTime;
     private float _waveTimer = 3f;
     private float _shoutTimer = 5f;
