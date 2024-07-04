@@ -97,7 +97,6 @@ public class AlienBehavior : MonoBehaviour
 
     private IEnumerator Walk()
     {
-        Debug.Log("Walking");
 
         SetNextWaypoint();
 
@@ -106,11 +105,7 @@ public class AlienBehavior : MonoBehaviour
 
         MoveTowards(currentWaypoint.transform.position, walkSpeed);
         
-        Debug.Log("Walking to " + currentWaypoint.name);
-
-        yield return new WaitUntil(() => Vector3.Distance(transform.position, currentWaypoint.transform.position) < 0.75f);
-
-        Debug.Log("Arrived at " + currentWaypoint.name);
+        yield return new WaitUntil(() => Vector3.Distance(transform.position, currentWaypoint.transform.position) < 1f);
 
         currentCoroutine = null;
         ChooseNextState();
@@ -125,7 +120,7 @@ public class AlienBehavior : MonoBehaviour
 
         MoveTowards(currentWaypoint.transform.position, runSpeed);
 
-        yield return new WaitUntil(() => Vector3.Distance(transform.position, currentWaypoint.transform.position) < 0.75f);
+        yield return new WaitUntil(() => Vector3.Distance(transform.position, currentWaypoint.transform.position) < 1f);
 
         currentCoroutine = null;
         ChooseNextState();

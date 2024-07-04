@@ -12,6 +12,8 @@ TagManager:
   - Car
   - UI
   - Teleport
+  - Waypoint
+  - ParticleCollider
   layers:
   - Default
   - TransparentFX

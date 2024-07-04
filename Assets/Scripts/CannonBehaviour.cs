@@ -5,89 +5,110 @@ using UnityEngine.AI;
 
 public class CannonBehaviour : MonoBehaviour
 {
-    public Transform player;
-    private NavMeshAgent agent;
-    public Transform metalCylinder;
-    public ParticleSystem shootEffect;
-    private float timer = 0f;
-    private float shootTimer = 0f;
-    private float moveInterval = 3f; // Time in seconds between movements
-    private float minShootInterval = 5f;
-    private float maxShootInterval = 20f;   
-    private float shootInterval = 0f;
-    public Transform cylinderCenter;
-    private float cylinderRadius;
+    [Header("References")]
+    [SerializeField] private Transform _player;
+    [SerializeField] private Transform _metalCylinder;
+    [SerializeField] private ParticleSystem _shootEffect;
+    [SerializeField] private Transform _cylinderCenter;
+    public NavMeshAgent Agent;
+    private float _cylinderRadius;
+    private Vector3 _initialPosition;
+    [Space(10)]
 
-    void Start()
+    [Header("Game Settings")]
+    [SerializeField] private float _minShootInterval = 5f;
+    [SerializeField] private float _maxShootInterval = 15f;   
+    private float _shootInterval = 0f;
+    private float _shootTimer = 0f;
+
+    [SerializeField] private float _moveInterval = 3f;
+    private float _moveTimer = 0f;
+
+    public bool IsRunning = false;
+
+    private void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        cylinderRadius = cylinderCenter.localScale.x / 2 * 0.9f;
-        MoveToRandomPointOnCylinder();
+        Agent = GetComponent<NavMeshAgent>();
+        _cylinderRadius = _cylinderCenter.localScale.x / 2 * 0.9f;
+        _initialPosition = transform.position;
     }
 
-    void Update()
+    private void Update()
     {
-        timer += Time.deltaTime;
-
-        if (timer >= moveInterval || agent.remainingDistance < 1f || agent.velocity.magnitude < 0.1f)
+        if (IsRunning)
         {
-            MoveToRandomPointOnCylinder();
-            timer = 0f;
-        }
+           _moveTimer += Time.deltaTime;
 
-        RotateTowardsPlayer();
-        RotateMetalCylinder();
+            if (_moveTimer >= _moveInterval || Agent.remainingDistance < 1f || Agent.velocity.magnitude < 0.1f)
+            {
+                MoveToRandomPointOnCylinder();
+                _moveTimer = 0f;
+            }
 
-        shootTimer += Time.deltaTime;
+            RotateTowardsPlayer();
+            RotateMetalCylinder();
 
-        if (shootInterval == 0f)
-        {
-            shootInterval = Random.Range(minShootInterval, maxShootInterval);
-        }
+            _shootTimer += Time.deltaTime;
 
-        if (shootTimer >= shootInterval)
-        {
-            shootTimer = 0f;
-            shootInterval = 0f;
-            Shoot();
+            if (_shootInterval == 0f)
+            {
+                _shootInterval = Random.Range(_minShootInterval, _maxShootInterval);
+            }
+
+            if (_shootTimer >= _shootInterval)
+            {
+                _shootTimer = 0f;
+                _shootInterval = 0f;
+                Shoot();
+            } 
         }
     }
 
-    void MoveToRandomPointOnCylinder()
+    private void MoveToRandomPointOnCylinder()
     {
-        Vector2 randomPoint = Random.insideUnitCircle * cylinderRadius;
-        Vector3 finalPosition = new Vector3(randomPoint.x + cylinderCenter.position.x, cylinderCenter.position.y, randomPoint.y + cylinderCenter.position.z);
+        Vector2 randomPoint = Random.insideUnitCircle * _cylinderRadius;
+        Vector3 finalPosition = new Vector3(randomPoint.x + _cylinderCenter.position.x, _cylinderCenter.position.y, randomPoint.y + _cylinderCenter.position.z);
 
         NavMeshHit hit;
         if (NavMesh.SamplePosition(finalPosition, out hit, 1.0f, NavMesh.AllAreas))
         {
-            agent.SetDestination(hit.position);
+            Agent.SetDestination(hit.position);
         }
     }
 
-    void RotateTowardsPlayer()
+    private void RotateTowardsPlayer()
     {
-        if (player != null)
+        if (_player != null)
         {
-            Vector3 direction = (player.position - transform.position).normalized;
+            Vector3 direction = (_player.position - transform.position).normalized;
             Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
         }
     }
 
-    void RotateMetalCylinder()
+    private void RotateMetalCylinder()
     {
-        if (agent.velocity.magnitude > 0.1f)
+        if (Agent.velocity.magnitude > 0.1f)
         {
-            if (metalCylinder != null)
+            if (_metalCylinder != null)
             {
-                metalCylinder.Rotate(Vector3.up, Time.deltaTime * 100f);
+                _metalCylinder.Rotate(Vector3.up, Time.deltaTime * 100f);
             }
         }
     }
 
-    void Shoot()
+    private void Shoot()
     {
-        shootEffect.Play();
+        _shootEffect.Play();
     }
+
+    public void ResetCannon()
+    {
+        Agent.isStopped = false;
+        Agent.SetDestination(_initialPosition);
+        _shootTimer = 0f;
+        _moveTimer = 0f;
+        IsRunning = false;
+    }
+
 }

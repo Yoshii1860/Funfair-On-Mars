@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c98b1151952db6b44a8fabce507ccdef, type: 3}
+  m_Name: CabbageCannonsFinished
+  m_EditorClassIdentifier: 
+  SpeakerName: Cabbage
+  DialogueLines:
+  - DialogueText: Are you done playing?
+    DialogueButtons:
+    - ButtonText: Yes
+      ActionKey: CheckPistol
+    - ButtonText: No!
+      ActionKey: FinishDialogue
+  - DialogueText: I hope you had fun! Come back anytime!
+    DialogueButtons:
+    - ButtonText: Bye!
+      ActionKey: CloseDialogue
+  - DialogueText: Take your time and have fun!
+    DialogueButtons:
+    - ButtonText: See you!
+      ActionKey: CloseDialogue
